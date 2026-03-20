@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+// Firebase Initialization
 const firebaseConfig = {
   projectId: process.env.FIREBASE_PROJECT_ID,
   clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
@@ -28,10 +29,14 @@ const router = express.Router();
 app.use(express.json());
 app.use(cookieParser());
 
-// Test Route
-router.get('/health', (req, res) => res.json({ status: 'ok' }));
+// --- ROUTES ---
 
-// Push Route
+// 1. Debug Route (Check karne ke liye: gamerzonenew.netlify.app/api/test)
+router.get('/test', (req, res) => {
+  res.json({ message: 'API is working perfectly!', time: new Date().toISOString() });
+});
+
+// 2. Push Notification Route
 router.post('/send-push', async (req, res) => {
   try {
     const { title, body, targetUserId } = req.body;
@@ -81,14 +86,15 @@ router.post('/send-push', async (req, res) => {
   }
 });
 
-// Mount
-app.use('/.netlify/functions/api', router);
+// --- MOUNTING ---
+// Netlify ke liye hum router ko multiple paths par mount karte hain
 app.use('/api', router);
+app.use('/.netlify/functions/api', router);
 app.use('/', router);
 
 export { app };
 
-// Local Dev
+// Local Server (Sirf development ke liye)
 if (process.env.NODE_ENV !== 'production' || !process.env.NETLIFY) {
   const PORT = 3000;
   app.listen(PORT, '0.0.0.0', () => {
