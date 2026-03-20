@@ -43,7 +43,6 @@ router.post('/send-push', async (req, res) => {
     let tokens: string[] = [];
 
     if (targetUserId) {
-      // Send to specific user
       const userDoc = await admin.firestore().collection('users').doc(targetUserId).get();
       if (userDoc.exists) {
         const user = userDoc.data();
@@ -52,7 +51,6 @@ router.post('/send-push', async (req, res) => {
         }
       }
     } else {
-      // Send to all users
       const usersSnap = await admin.firestore().collection('users').get();
       usersSnap.forEach(doc => {
         const user = doc.data();
@@ -84,6 +82,7 @@ router.post('/send-push', async (req, res) => {
 });
 
 // Mount
+app.use('/.netlify/functions/api', router);
 app.use('/api', router);
 app.use('/', router);
 
