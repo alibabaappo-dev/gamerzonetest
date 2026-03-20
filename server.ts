@@ -31,9 +31,13 @@ app.use(cookieParser());
 
 // --- ROUTES ---
 
-// 1. Debug Route (Check karne ke liye: gamerzonenew.netlify.app/api/test)
+// 1. Debug Route
 router.get('/test', (req, res) => {
-  res.json({ message: 'API is working perfectly!', time: new Date().toISOString() });
+  res.json({ 
+    message: 'API is working perfectly!', 
+    time: new Date().toISOString(),
+    env: process.env.NODE_ENV 
+  });
 });
 
 // 2. Push Notification Route
@@ -87,14 +91,13 @@ router.post('/send-push', async (req, res) => {
 });
 
 // --- MOUNTING ---
-// Netlify ke liye hum router ko multiple paths par mount karte hain
+// Netlify functions ke liye '/' par mount karna zaroori hai
 app.use('/api', router);
-app.use('/.netlify/functions/api', router);
 app.use('/', router);
 
 export { app };
 
-// Local Server (Sirf development ke liye)
+// Local Server
 if (process.env.NODE_ENV !== 'production' || !process.env.NETLIFY) {
   const PORT = 3000;
   app.listen(PORT, '0.0.0.0', () => {
