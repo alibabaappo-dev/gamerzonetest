@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Firebase Initialization
+// Firebase Admin Initialization
 const firebaseConfig = {
   projectId: process.env.FIREBASE_PROJECT_ID,
   clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
@@ -31,16 +31,24 @@ app.use(cookieParser());
 
 // --- ROUTES ---
 
-// 1. Debug Route
-router.get('/test', (req, res) => {
+// 1. Root Route (Check karne ke liye ke API zinda hai)
+router.get('/', (req, res) => {
   res.json({ 
-    message: 'API is working perfectly!', 
-    time: new Date().toISOString(),
-    env: process.env.NODE_ENV 
+    status: 'online',
+    message: 'Gamer Zone API is working perfectly!',
+    timestamp: new Date().toISOString()
   });
 });
 
-// 2. Push Notification Route
+// 2. Debug/Test Route
+router.get('/test', (req, res) => {
+  res.json({ 
+    message: 'Test route is working!', 
+    time: new Date().toISOString()
+  });
+});
+
+// 3. Push Notification Route
 router.post('/send-push', async (req, res) => {
   try {
     const { title, body, targetUserId } = req.body;
@@ -52,6 +60,7 @@ router.post('/send-push', async (req, res) => {
     let tokens: string[] = [];
 
     if (targetUserId) {
+      // Specific user ko bhejna
       const userDoc = await admin.firestore().collection('users').doc(targetUserId).get();
       if (userDoc.exists) {
         const user = userDoc.data();
@@ -60,6 +69,7 @@ router.post('/send-push', async (req, res) => {
         }
       }
     } else {
+      // Sab users ko bhejna
       const usersSnap = await admin.firestore().collection('users').get();
       usersSnap.forEach(doc => {
         const user = doc.data();
@@ -91,13 +101,13 @@ router.post('/send-push', async (req, res) => {
 });
 
 // --- MOUNTING ---
-// Netlify functions ke liye '/' par mount karna zaroori hai
+// Netlify functions ke liye router ko '/' aur '/api' dono par mount karte hain
 app.use('/api', router);
 app.use('/', router);
 
 export { app };
 
-// Local Server
+// Local Server (Sirf local development ke liye)
 if (process.env.NODE_ENV !== 'production' || !process.env.NETLIFY) {
   const PORT = 3000;
   app.listen(PORT, '0.0.0.0', () => {
